@@ -47,20 +47,11 @@ A personal productivity workspace built with **React 19**, **Vite**, **Tailwind 
 
 Because Cadence builds to static files in `dist/` and connects directly to Firebase, you can host it free on **GitHub Pages**, **Vercel**, **Netlify**, **Render Static Site**, or **Cloudflare Pages**.
 
-### GitHub Pages
+### Render
 
-The included GitHub Actions workflow builds and deploys the site whenever code is pushed to the `main` branch. To enable it:
-
-1. In the GitHub repository, open **Settings → Pages**.
-2. Set **Build and deployment → Source** to **GitHub Actions**.
-3. Push to `main` or run the **Deploy to GitHub Pages** workflow manually from the **Actions** tab.
-4. In **Firebase Console** (project `upheld-window-jc62s`), go to **Authentication → Settings → Authorized domains** and add the published domain (without `https://`).
-
-### Other static hosts
-
-Connect the repository to **Vercel**, **Netlify**, **Render Static Site**, or **Cloudflare Pages** and use:
+Create a **Static Site** in Render and connect this repository. Use:
 
 - **Build command:** `npm install && npm run build`
 - **Output directory:** `dist`
 
-In Firebase Console, add the deployed domain under **Authentication → Settings → Authorized domains**.
+In Firebase Console (project `upheld-window-jc62s`), add the Render domain under **Authentication → Settings → Authorized domains**.
