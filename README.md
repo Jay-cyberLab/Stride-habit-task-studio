@@ -1,4 +1,4 @@
-# Cadence — Habit & Task Studio
+# Stride — Habit & Task Studio
 
 A personal productivity workspace built with **React 19**, **Vite**, **Tailwind CSS v4**, and **Firebase (Auth + Firestore)**. No external AI API keys or backend servers are required.
 
