@@ -1,0 +1,8 @@
+{
+  "name": "Cadence — Habit & Task Studio",
+  "description": "Daily habit tracker with goal progress, streak analytics, and a categorized, priority-tagged task planner.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

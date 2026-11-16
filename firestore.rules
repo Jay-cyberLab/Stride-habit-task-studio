@@ -1,0 +1,177 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global safety net: default deny everything unless explicitly matched
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidTheme(theme) {
+      return theme in ['classic', 'ocean', 'nature', 'royal'];
+    }
+
+    function isValidUserProfileCreate(data, userId) {
+      return data.keys().hasAll(['uid', 'displayName', 'theme', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['uid', 'email', 'displayName', 'theme', 'createdAt', 'updatedAt']) &&
+        data.uid is string && data.uid == userId && data.uid == request.auth.uid &&
+        isValidId(data.uid) &&
+        (!('email' in data) || (data.email is string && data.email.size() <= 320)) &&
+        data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 80 &&
+        data.theme is string && isValidTheme(data.theme) &&
+        data.createdAt == request.time &&
+        data.updatedAt == request.time;
+    }
+
+    function isValidUserProfileUpdate(data) {
+      return data.keys().hasAll(['uid', 'displayName', 'theme', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['uid', 'email', 'displayName', 'theme', 'createdAt', 'updatedAt']) &&
+        data.uid == existing().uid &&
+        data.createdAt == existing().createdAt &&
+        (!('email' in data) || (data.email is string && data.email.size() <= 320)) &&
+        data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 80 &&
+        data.theme is string && isValidTheme(data.theme) &&
+        data.updatedAt == request.time;
+    }
+
+    function isValidHabitData(data, userId, habitId) {
+      return data.keys().hasAll(['id', 'userId', 'title', 'category', 'targetCount', 'unit', 'accentColor', 'logs', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['id', 'userId', 'title', 'category', 'targetCount', 'unit', 'accentColor', 'logs', 'createdAt', 'updatedAt']) &&
+        isValidId(data.id) && data.id == habitId &&
+        isValidId(data.userId) && data.userId == userId && data.userId == request.auth.uid &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 60 &&
+        data.category in ['Health', 'Focus', 'Mindfulness', 'Fitness', 'Learning'] &&
+        data.targetCount is int && data.targetCount >= 1 && data.targetCount <= 999 &&
+        data.unit is string && data.unit.size() >= 1 && data.unit.size() <= 30 &&
+        data.accentColor is string && data.accentColor.size() <= 32 && data.accentColor.matches('^#[0-9a-fA-F]{3,8}$') &&
+        data.logs is map && data.logs.size() <= 730 &&
+        data.createdAt is string && data.createdAt.size() >= 10 && data.createdAt.size() <= 32 &&
+        data.updatedAt == request.time;
+    }
+
+    function isValidTaskData(data, userId, taskId) {
+      return data.keys().hasAll(['id', 'userId', 'title', 'category', 'priority', 'completed', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['id', 'userId', 'title', 'category', 'priority', 'completed', 'dueDate', 'createdAt', 'updatedAt']) &&
+        isValidId(data.id) && data.id == taskId &&
+        isValidId(data.userId) && data.userId == userId && data.userId == request.auth.uid &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 120 &&
+        data.category in ['Work', 'Personal', 'Health', 'Learning', 'Finance'] &&
+        data.priority in ['high', 'medium', 'low'] &&
+        data.completed is bool &&
+        (!('dueDate' in data) || (data.dueDate is string && data.dueDate.size() <= 32)) &&
+        data.createdAt is string && data.createdAt.size() >= 10 && data.createdAt.size() <= 64 &&
+        data.updatedAt == request.time;
+    }
+
+    function isValidDiaryEntryData(data, userId, entryId) {
+      return data.keys().hasAll(['id', 'userId', 'date', 'title', 'content', 'mood', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['id', 'userId', 'date', 'title', 'content', 'mood', 'createdAt', 'updatedAt']) &&
+        isValidId(data.id) && data.id == entryId &&
+        isValidId(data.userId) && data.userId == userId && data.userId == request.auth.uid &&
+        data.date is string && data.date.size() >= 10 && data.date.size() <= 32 &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 120 &&
+        data.content is string && data.content.size() >= 1 && data.content.size() <= 10000 &&
+        data.mood in ['Calm', 'Grateful', 'Focused', 'Reflective', 'Stressed'] &&
+        data.createdAt is string && data.createdAt.size() >= 10 && data.createdAt.size() <= 64 &&
+        data.updatedAt is string && data.updatedAt.size() >= 10 && data.updatedAt.size() <= 64;
+    }
+
+    function isValidDiaryAuthData(data, userId) {
+      return data.keys().hasAll(['userId', 'salt', 'passwordHash', 'updatedAt']) &&
+        data.keys().hasOnly(['userId', 'salt', 'passwordHash', 'updatedAt']) &&
+        isValidId(data.userId) && data.userId == userId && data.userId == request.auth.uid &&
+        data.salt is string && data.salt.size() >= 16 && data.salt.size() <= 128 &&
+        data.passwordHash is string && data.passwordHash.size() >= 32 && data.passwordHash.size() <= 256 &&
+        data.updatedAt is string && data.updatedAt.size() >= 10 && data.updatedAt.size() <= 64;
+    }
+
+    match /users/{userId} {
+      allow get: if isValidId(userId) && isOwner(userId);
+      allow list: if false;
+      allow create: if isValidId(userId) && isOwner(userId) && isValidUserProfileCreate(incoming(), userId);
+      allow update: if isValidId(userId) && isOwner(userId) && isValidUserProfileUpdate(incoming()) &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'email', 'theme', 'updatedAt']);
+      allow delete: if false;
+
+      match /habits/{habitId} {
+        allow get: if isValidId(userId) && isValidId(habitId) && isOwner(userId);
+        allow list: if isValidId(userId) && isOwner(userId) && resource.data.userId == request.auth.uid;
+        allow create: if isValidId(userId) && isValidId(habitId) && isOwner(userId) &&
+          isValidHabitData(incoming(), userId, habitId);
+        allow update: if isValidId(userId) && isValidId(habitId) && isOwner(userId) &&
+          isValidHabitData(incoming(), userId, habitId) &&
+          incoming().id == existing().id &&
+          incoming().userId == existing().userId &&
+          incoming().createdAt == existing().createdAt &&
+          (
+            incoming().diff(existing()).affectedKeys().hasOnly(['logs', 'updatedAt']) ||
+            incoming().diff(existing()).affectedKeys().hasOnly(['title', 'category', 'targetCount', 'unit', 'accentColor', 'updatedAt'])
+          );
+        allow delete: if isValidId(userId) && isValidId(habitId) && isOwner(userId);
+      }
+
+      match /tasks/{taskId} {
+        allow get: if isValidId(userId) && isValidId(taskId) && isOwner(userId);
+        allow list: if isValidId(userId) && isOwner(userId) && resource.data.userId == request.auth.uid;
+        allow create: if isValidId(userId) && isValidId(taskId) && isOwner(userId) &&
+          isValidTaskData(incoming(), userId, taskId);
+        allow update: if isValidId(userId) && isValidId(taskId) && isOwner(userId) &&
+          isValidTaskData(incoming(), userId, taskId) &&
+          incoming().id == existing().id &&
+          incoming().userId == existing().userId &&
+          incoming().createdAt == existing().createdAt &&
+          (
+            incoming().diff(existing()).affectedKeys().hasOnly(['completed', 'updatedAt']) ||
+            incoming().diff(existing()).affectedKeys().hasOnly(['priority', 'updatedAt']) ||
+            incoming().diff(existing()).affectedKeys().hasOnly(['title', 'category', 'priority', 'dueDate', 'updatedAt'])
+          );
+        allow delete: if isValidId(userId) && isValidId(taskId) && isOwner(userId);
+      }
+
+      match /diary/{entryId} {
+        allow get: if isValidId(userId) && isValidId(entryId) && isOwner(userId);
+        allow list: if isValidId(userId) && isOwner(userId) && resource.data.userId == request.auth.uid;
+        allow create: if isValidId(userId) && isValidId(entryId) && isOwner(userId) &&
+          isValidDiaryEntryData(incoming(), userId, entryId);
+        allow update: if isValidId(userId) && isValidId(entryId) && isOwner(userId) &&
+          isValidDiaryEntryData(incoming(), userId, entryId) &&
+          incoming().id == existing().id &&
+          incoming().userId == existing().userId &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['date', 'title', 'content', 'mood', 'updatedAt']);
+        allow delete: if isValidId(userId) && isValidId(entryId) && isOwner(userId);
+      }
+
+      match /security/{docId} {
+        allow get: if isValidId(userId) && docId == 'diaryLock' && isOwner(userId);
+        allow list: if false;
+        allow create: if isValidId(userId) && docId == 'diaryLock' && isOwner(userId) &&
+          isValidDiaryAuthData(incoming(), userId);
+        allow update: if isValidId(userId) && docId == 'diaryLock' && isOwner(userId) &&
+          isValidDiaryAuthData(incoming(), userId) &&
+          incoming().userId == existing().userId &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['salt', 'passwordHash', 'updatedAt']);
+        allow delete: if isValidId(userId) && docId == 'diaryLock' && isOwner(userId);
+      }
+    }
+  }
+}

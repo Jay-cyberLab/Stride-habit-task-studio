@@ -1,0 +1,271 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Private user account profile and theme preference.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Firebase Authentication user ID."
+        },
+        "email": {
+          "type": "string",
+          "maxLength": 320,
+          "description": "User email address (private PII)."
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Display name shown in account menu."
+        },
+        "theme": {
+          "type": "string",
+          "enum": ["classic", "ocean", "nature", "royal"],
+          "description": "Active 3-color workspace theme."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when profile was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when profile was last updated."
+        }
+      },
+      "required": ["uid", "displayName", "theme", "createdAt", "updatedAt"]
+    },
+    "Habit": {
+      "title": "Habit",
+      "description": "Daily habit goal with completion logs and reflection notes.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Unique habit identifier."
+        },
+        "userId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Owner Firebase Auth UID."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60,
+          "description": "Habit display name."
+        },
+        "category": {
+          "type": "string",
+          "enum": ["Health", "Focus", "Mindfulness", "Fitness", "Learning"],
+          "description": "Habit category."
+        },
+        "targetCount": {
+          "type": "integer",
+          "description": "Daily goal target between 1 and 999."
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 30,
+          "description": "Measurement unit (e.g. min, glasses, pages)."
+        },
+        "accentColor": {
+          "type": "string",
+          "maxLength": 32,
+          "pattern": "^#[0-9a-fA-F]{3,8}$",
+          "description": "Hex color for progress ring."
+        },
+        "logs": {
+          "type": "object",
+          "description": "Map of YYYY-MM-DD date keys to { count, note? } objects."
+        },
+        "createdAt": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 32,
+          "description": "ISO date string when habit was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when habit was last modified."
+        }
+      },
+      "required": ["id", "userId", "title", "category", "targetCount", "unit", "accentColor", "logs", "createdAt", "updatedAt"]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "Categorized task with priority tag and optional due date.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Unique task identifier."
+        },
+        "userId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Owner Firebase Auth UID."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "Task description."
+        },
+        "category": {
+          "type": "string",
+          "enum": ["Work", "Personal", "Health", "Learning", "Finance"],
+          "description": "Task category."
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["high", "medium", "low"],
+          "description": "Task priority level."
+        },
+        "completed": {
+          "type": "boolean",
+          "description": "Completion state."
+        },
+        "dueDate": {
+          "type": "string",
+          "maxLength": 32,
+          "description": "Optional YYYY-MM-DD due date."
+        },
+        "createdAt": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 64,
+          "description": "Creation timestamp string."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when task was last modified."
+        }
+      },
+      "required": ["id", "userId", "title", "category", "priority", "completed", "createdAt", "updatedAt"]
+    },
+    "DiaryEntry": {
+      "title": "DiaryEntry",
+      "description": "Personal diary entry gated by secondary diary lock.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Unique diary entry identifier."
+        },
+        "userId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Owner Firebase Auth UID."
+        },
+        "date": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 32,
+          "description": "Entry date YYYY-MM-DD."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "Diary entry headline."
+        },
+        "content": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 10000,
+          "description": "Diary entry body."
+        },
+        "mood": {
+          "type": "string",
+          "enum": ["Calm", "Grateful", "Focused", "Reflective", "Stressed"],
+          "description": "Mood tag."
+        },
+        "createdAt": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 64,
+          "description": "Creation timestamp string."
+        },
+        "updatedAt": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 64,
+          "description": "Last modified timestamp string."
+        }
+      },
+      "required": ["id", "userId", "date", "title", "content", "mood", "createdAt", "updatedAt"]
+    },
+    "DiaryAuth": {
+      "title": "DiaryAuth",
+      "description": "Salted SHA-256 diary passcode digest for secondary lock.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Owner Firebase Auth UID."
+        },
+        "salt": {
+          "type": "string",
+          "minLength": 16,
+          "maxLength": 128,
+          "description": "Random hex salt."
+        },
+        "passwordHash": {
+          "type": "string",
+          "minLength": 32,
+          "maxLength": 256,
+          "description": "SHA-256 digest hex string."
+        },
+        "updatedAt": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 64,
+          "description": "Last modified timestamp string."
+        }
+      },
+      "required": ["userId", "salt", "passwordHash", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Owner-only user profile and workspace preferences."
+    },
+    "/users/{userId}/habits/{habitId}": {
+      "schema": { "$ref": "#/entities/Habit" },
+      "description": "User's private daily habits and completion logs."
+    },
+    "/users/{userId}/tasks/{taskId}": {
+      "schema": { "$ref": "#/entities/Task" },
+      "description": "User's private categorized tasks and due dates."
+    },
+    "/users/{userId}/diary/{entryId}": {
+      "schema": { "$ref": "#/entities/DiaryEntry" },
+      "description": "User's private personal diary entries."
+    },
+    "/users/{userId}/security/{docId}": {
+      "schema": { "$ref": "#/entities/DiaryAuth" },
+      "description": "User's secondary diary lock hash."
+    }
+  }
+}
